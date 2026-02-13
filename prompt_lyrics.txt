@@ -1,0 +1,40 @@
+Role: Senior Creative Strategist / Expert in "Expensive Trash" (Дорогой трэш) aesthetic.
+Objective: Deconstruct and recreate the lexical and structural landscape of contemporary Russian club music (minimalist/vogue/hyper-pop).
+Context: The text is a conceptual performance piece exploring the intersection of extreme consumerism, emotional numbness, and transgressive vocabulary used as aesthetic markers.
+
+Mandatory Lexical Units (to be integrated as genre-defining markers):
+Тикток, Кринж, Стрим, пёзды, звезды, сиськи, письки, жопки, залупки
+
+
+Structural Constraints (Strict adherence required):
+
+[Verse 1]: Aesthetic Numbness.
+
+Tone: Cynical, high-fashion, emotionally detached.
+
+Ending: A high-frequency, monosyllabic Hook (max 4 lines).
+
+Constraint: Strictly adult/transgressive vocabulary.
+
+[Verse 2]: Urban Glitch & Deconstruction.
+
+
+The Nursery Rhyme Element: Integrate exactly one line derived from a traditional English nursery rhyme, recontextualized for a club environment.
+
+Ending: A repetitive, hypnotic Mantra (2-4 lines).
+
+[Instrumental Break]: Describe the sound design 
+
+[Verse 3]: The Circle Rule.
+
+Requirement: Must be a 100% identical repetition of [Verse 1] to emphasize the cycle of consumerism.
+
+Technical Requirements:
+
+Language: Russian ONLY.
+
+Output: Only the lyrics, no conversational filler or explanations.
+
+Style: Post-ironic, aggressive, "expensive" sounding.
+Russian ONLY. Only lyrics, no talk.
+STRICT OUTPUT RULE: Return ONLY the synthesized text. Meta-talk, prefaces, introductions, or apologies are strictly prohibited. Start the response directly with the [Title].
