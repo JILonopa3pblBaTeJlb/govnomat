@@ -20,27 +20,28 @@ def super_clean(text):
     # 1. Удаляем <think> блоки
     text = RE_THINK.sub("", text)
     
-    # 2. Удаляем всё до фразы End of Thought включительно
+    # 2. Удаляем ВЕСЬ блок рассуждений в начале (до метки End of Thought)
     text = RE_END_OF_THOUGHT.sub("", text)
     
-    # 3. Чистим Markdown блоки кода
+    # 3. НОВОЕ: Удаляем "Примечание", "Note" и всё, что после них до конца текста
+    # Ищет варианты: "Примечание:", "--- Примечание", "**Примечание**" и т.д.
+    text = re.sub(r"(?is)\n?\s*(?:---|\*\*\*|___)?\s*(?:Примечание|Note|P\.S\.)[:\s].*$", "", text)
+    
+    # 4. Чистим Markdown блоки кода ```...```
     text = re.sub(r"```[a-zA-Z]*\n?(.*?)\n?```", r"\1", text, flags=re.DOTALL)
     
-    # 4. Удаляем жирное выделение из заголовков типа **Название:** или **Куплет 1:**
-    # Это важно, чтобы префиксы ниже сработали
+    # 5. Удаляем жирное выделение **...**
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     
-    # 5. Базовая очистка краев
+    # 6. Базовая очистка краев
     text = text.strip().strip('"').strip('«').strip('»').strip("'")
     
-    # 6. Очистка мусорных префиксов
-    # Добавил варианты с точками и двоеточиями
+    # 7. Очистка мусорных префиксов в начале
     prefixes = [
         "Prompt:", "Lyrics:", "Response:", "Here is", "Sure,", "I will",
         "Название:", "Название песни:", "Title:", "Текст песни:", "Отредактированный текст:"
     ]
     
-    # Проходим циклом, пока текст начинается с какого-то префикса
     changed = True
     while changed:
         changed = False
@@ -50,6 +51,7 @@ def super_clean(text):
                 changed = True
                 
     return text
+    
 def load_prompt(file_path, default):
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf-8") as f: return f.read().strip()
