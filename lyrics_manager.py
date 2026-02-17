@@ -17,25 +17,38 @@ INACTIVE_SECONDS = 10 * 60
 def super_clean(text):
     if not text: return ""
     
-    # Сначала удаляем стандартные теги <think>...</think>
+    # 1. Удаляем <think> блоки
     text = RE_THINK.sub("", text)
     
-    # Затем удаляем всё, что ведет к "End of Thought"
-    # (захватывает весь бред нейросети в начале)
+    # 2. Удаляем всё до фразы End of Thought включительно
     text = RE_END_OF_THOUGHT.sub("", text)
     
-    # Убираем блоки кода ```markdown ... ```
+    # 3. Чистим Markdown блоки кода
     text = re.sub(r"```[a-zA-Z]*\n?(.*?)\n?```", r"\1", text, flags=re.DOTALL)
     
-    # Базовая очистка символов
+    # 4. Удаляем жирное выделение из заголовков типа **Название:** или **Куплет 1:**
+    # Это важно, чтобы префиксы ниже сработали
+    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
+    
+    # 5. Базовая очистка краев
     text = text.strip().strip('"').strip('«').strip('»').strip("'")
     
-    # Очистка мусорных префиксов (теперь и с учетом переноса строк)
-    prefixes = ["Prompt:", "Lyrics:", "Response:", "Here is", "Sure,", "I will", "Название песни:"]
-    for prefix in prefixes:
-        if text.lower().startswith(prefix.lower()):
-            text = text[len(prefix):].strip().strip(":").strip()
-            
+    # 6. Очистка мусорных префиксов
+    # Добавил варианты с точками и двоеточиями
+    prefixes = [
+        "Prompt:", "Lyrics:", "Response:", "Here is", "Sure,", "I will",
+        "Название:", "Название песни:", "Title:", "Текст песни:", "Отредактированный текст:"
+    ]
+    
+    # Проходим циклом, пока текст начинается с какого-то префикса
+    changed = True
+    while changed:
+        changed = False
+        for prefix in prefixes:
+            if text.lower().startswith(prefix.lower()):
+                text = text[len(prefix):].strip().strip(":").strip()
+                changed = True
+                
     return text
 def load_prompt(file_path, default):
     if os.path.exists(file_path):
@@ -136,15 +149,20 @@ async def get_text_from_llm(system, task, tag):
                 mark_inactive(p_name)
                 continue
 
-            print(f"📩 [{tag}] ОТВЕТ: {str(resp)}...")
+            # СНАЧАЛА чистим ответ от мыслей, тегов и мусора
             text = super_clean(str(resp))
             
+            # ТЕПЕРЬ выводим в лог (можно выводить чистый текст, чтобы видеть результат)
+            print(f"📩 [{tag}] ОЧИЩЕННЫЙ ОТВЕТ: {text}...")
+
+            # И ТЕПЕРЬ проверяем очищенный текст на отказы (denials)
             if any(d in text.lower() for d in denials):
-                print(f"🚫 [{tag}] Отказ от {p_name}. Пробую другого.")
+                print(f"🚫 [{tag}] Очищенный текст содержит отказ от {p_name}. Пробую другого.")
                 if len(active) <= 1: save_inactive({})
                 continue
 
             if len(text) < 15:
+                print(f"⚠️ [{tag}] Слишком короткий текст после очистки от {p_name}.")
                 mark_inactive(p_name)
                 continue
 
@@ -153,7 +171,7 @@ async def get_text_from_llm(system, task, tag):
                 print("🎸 Рефрен прихардкожен.")
 
             return text
-
+            
         except Exception as e:
             print(f"❌ Ошибка {p_name}: {e}")
             mark_inactive(p_name)
