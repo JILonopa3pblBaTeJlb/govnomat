@@ -10,22 +10,33 @@ from config import *
 
 logger = logging.getLogger(__name__)
 
+RE_END_OF_THOUGHT = re.compile(r"(?s).*?End of Thought\s*\(\*?\d+(?:\.\d+)?s?\)\s*", flags=re.IGNORECASE)
 RE_THINK = re.compile(r"<think>.*?</think>", flags=re.DOTALL | re.IGNORECASE)
-RE_END_OF_THOUGHT = re.compile(r"End of Thought\s*\(\*?\d+(?:\.\d+)?s?\)", flags=re.IGNORECASE)
 INACTIVE_SECONDS = 10 * 60
 
 def super_clean(text):
     if not text: return ""
+    
+    # Сначала удаляем стандартные теги <think>...</think>
     text = RE_THINK.sub("", text)
+    
+    # Затем удаляем всё, что ведет к "End of Thought"
+    # (захватывает весь бред нейросети в начале)
     text = RE_END_OF_THOUGHT.sub("", text)
+    
+    # Убираем блоки кода ```markdown ... ```
     text = re.sub(r"```[a-zA-Z]*\n?(.*?)\n?```", r"\1", text, flags=re.DOTALL)
+    
+    # Базовая очистка символов
     text = text.strip().strip('"').strip('«').strip('»').strip("'")
-    prefixes = ["Prompt:", "Lyrics:", "Response:", "Here is", "Sure,", "I will", "Want best roleplay experience?", "https://llmplayground.net"]
+    
+    # Очистка мусорных префиксов (теперь и с учетом переноса строк)
+    prefixes = ["Prompt:", "Lyrics:", "Response:", "Here is", "Sure,", "I will", "Название песни:"]
     for prefix in prefixes:
         if text.lower().startswith(prefix.lower()):
             text = text[len(prefix):].strip().strip(":").strip()
+            
     return text
-
 def load_prompt(file_path, default):
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf-8") as f: return f.read().strip()
